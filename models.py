@@ -16,6 +16,14 @@ class ApplicationStatus(enum.Enum):
 
 class ApplicationSource(enum.Enum):
     LINKEDIN = "LinkedIn"
+    INDEED = "Indeed"
+    ZIP_RECRUITER = "Zip Recruiter"
+    DICE = "Dice"
+    WELLFOUND = "Wellfound"
+    KAGGLE = "Kaggle"
+    WASHINGTON_TECHNOLOGY = "Washington Technology"
+    BUILT_IN_SEATTLE = "Built In Seattle"
+    GITHUB_CAREERS = "GitHub Careers"
     REFERRAL = "Referral"
     COLD_OUTREACH = "Cold Outreach"
     COMPANY_WEBSITE = "Company Website"
@@ -69,6 +77,7 @@ class Application(db.Model):
         default=CompanyType.UNKNOWN,
     )
     notes = db.Column(db.Text, nullable=True)
+    job_description = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime(timezone=True), default=_now)
     updated_at = db.Column(db.DateTime(timezone=True), default=_now, onupdate=_now)
 
@@ -105,3 +114,26 @@ class StageEvent(db.Model):
         default=StageOutcome.PENDING,
     )
     notes = db.Column(db.Text, nullable=True)
+
+
+class AnalysisType(enum.Enum):
+    SKILLS = "skills"
+    FIT_SUMMARY = "fit_summary"
+    INTERVIEW = "interview"
+
+
+class AIAnalysis(db.Model):
+    __tablename__ = "ai_analysis"
+    __table_args__ = (
+        db.UniqueConstraint("application_id", "analysis_type", name="uq_analysis_app_type"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    application_id = db.Column(db.Integer, db.ForeignKey("application.id"), nullable=False)
+    analysis_type = db.Column(db.Enum(AnalysisType, native_enum=False), nullable=False)
+    result_json = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=_now)
+
+    application = db.relationship(
+        "Application", backref=db.backref("ai_analyses", lazy="select")
+    )

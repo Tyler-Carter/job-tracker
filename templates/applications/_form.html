@@ -111,6 +111,13 @@
       class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-1.5 text-sm bg-white dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-400">{{ form.notes if form is defined else (application.notes or '' if is_edit else '') }}</textarea>
   </div>
 
+  <div class="sm:col-span-2 lg:col-span-3">
+    <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Job Description <span class="font-normal text-gray-400">(paste full posting)</span></label>
+    <textarea name="job_description" rows="6"
+      placeholder="Paste the full job description here to unlock AI analysis..."
+      class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-1.5 text-sm bg-white dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-400 resize-y">{{ form.job_description if form is defined else (application.job_description or '' if is_edit else '') }}</textarea>
+  </div>
+
   <div class="sm:col-span-2 lg:col-span-3 flex gap-2">
     <button type="submit"
       class="px-4 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">

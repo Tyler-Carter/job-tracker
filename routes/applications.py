@@ -4,6 +4,7 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from app import db, require_admin
 from models import (
     Application,
+    AnalysisType,
     ApplicationSource,
     ApplicationStatus,
     CompanySize,
@@ -87,6 +88,7 @@ def _parse_application_form(form):
             data[field] = None
 
     data["notes"] = form.get("notes", "").strip() or None
+    data["job_description"] = form.get("job_description", "").strip() or None
 
     return data, errors
 
@@ -225,6 +227,7 @@ def get_application(app_id):
         status_badge=STATUS_BADGE,
         statuses=ApplicationStatus,
         outcomes=StageOutcome,
+        analysis_types=AnalysisType,
         today=date.today().isoformat(),
         event_errors={},
     )

@@ -28,7 +28,10 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 # ── Import models so Flask-Migrate can detect them ──────────────────────────
+import json
 import models  # noqa: F401, E402
+
+app.jinja_env.filters["fromjson"] = json.loads
 
 # ── Auth ─────────────────────────────────────────────────────────────────────
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "dev-admin")
@@ -69,9 +72,11 @@ def logout():
 # ── Blueprints ───────────────────────────────────────────────────────────────
 from routes.applications import bp as applications_bp  # noqa: E402
 from routes.analytics import bp as analytics_bp  # noqa: E402
+from routes.ai import bp as ai_bp  # noqa: E402
 
 app.register_blueprint(applications_bp)
 app.register_blueprint(analytics_bp)
+app.register_blueprint(ai_bp)
 
 
 @app.route("/")

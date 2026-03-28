@@ -8,7 +8,14 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 
 # ── Database ────────────────────────────────────────────────────────────────
-_db_url = os.environ.get("DATABASE_URL", "sqlite:///jobtracker.db")
+# DATABASE_PUBLIC_URL is Railway's externally-reachable URL (used when running
+# commands locally via `railway run`). Fall back to internal DATABASE_URL
+# (used by the deployed app inside Railway's private network), then SQLite.
+_db_url = (
+    os.environ.get("DATABASE_PUBLIC_URL")
+    or os.environ.get("DATABASE_URL")
+    or "sqlite:///jobtracker.db"
+)
 # Railway provides postgres:// URIs; SQLAlchemy requires postgresql://
 if _db_url.startswith("postgres://"):
     _db_url = _db_url.replace("postgres://", "postgresql://", 1)

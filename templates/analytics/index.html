@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+{% block title %}Analytics — Job Tracker{% endblock %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-semibold">Analytics</h1>
+</div>
+
+{% if no_data %}
+  <div class="bg-white border border-gray-200 rounded-lg p-10 text-center">
+    <p class="text-gray-400 text-sm">No applications yet. Start logging applications to see analytics.</p>
+  </div>
+
+{% else %}
+
+{# ─── Summary Cards ──────────────────────────────────────────────────── #}
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white border border-gray-200 rounded-lg p-5">
+    <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Total Applied</p>
+    <p class="text-3xl font-bold text-gray-800">{{ total }}</p>
+  </div>
+  <div class="bg-white border border-gray-200 rounded-lg p-5">
+    <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Active</p>
+    <p class="text-3xl font-bold text-blue-600">{{ active }}</p>
+    <p class="text-xs text-gray-400 mt-0.5">in pipeline</p>
+  </div>
+  <div class="bg-white border border-gray-200 rounded-lg p-5">
+    <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Responded</p>
+    <p class="text-3xl font-bold text-gray-800">{{ responded }}</p>
+    <p class="text-xs text-gray-400 mt-0.5">any status change</p>
+  </div>
+  <div class="bg-white border border-gray-200 rounded-lg p-5">
+    <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Response Rate</p>
+    <p class="text-3xl font-bold {% if response_rate >= 50 %}text-green-600{% elif response_rate >= 25 %}text-yellow-600{% else %}text-red-500{% endif %}">
+      {{ response_rate }}%
+    </p>
+    {% if offers %}
+      <p class="text-xs text-green-600 mt-0.5">{{ offers }} offer{{ 's' if offers != 1 }}</p>
+    {% else %}
+      <p class="text-xs text-gray-400 mt-0.5">0 offers yet</p>
+    {% endif %}
+  </div>
+</div>
+
+{# ─── Row 2: Status Doughnut + Applications Over Time ────────────────── #}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+
+  {# Status Breakdown #}
+  <div class="bg-white border border-gray-200 rounded-lg p-5">
+    <h2 class="text-sm font-semibold text-gray-700 mb-4">Status Breakdown</h2>
+    <div class="relative h-52">
+      <canvas id="statusChart"></canvas>
+    </div>
+  </div>
+
+  {# Applications Over Time #}
+  <div class="bg-white border border-gray-200 rounded-lg p-5 lg:col-span-2">
+    <h2 class="text-sm font-semibold text-gray-700 mb-4">Applications Over Time <span class="text-xs font-normal text-gray-400">(by week)</span></h2>
+    <div class="relative h-52">
+      <canvas id="timelineChart"></canvas>
+    </div>
+  </div>
+
+</div>
+
+{# ─── Row 3: Company Size + Source Breakdown ─────────────────────────── #}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+
+  <div class="bg-white border border-gray-200 rounded-lg p-5">
+    <h2 class="text-sm font-semibold text-gray-700 mb-4">By Company Size</h2>
+    <div class="relative h-44">
+      <canvas id="sizeChart"></canvas>
+    </div>
+  </div>
+
+  <div class="bg-white border border-gray-200 rounded-lg p-5">
+    <h2 class="text-sm font-semibold text-gray-700 mb-4">By Source Channel</h2>
+    <div class="relative h-44">
+      <canvas id="sourceChart"></canvas>
+    </div>
+  </div>
+
+</div>
+
+{# ─── Row 4: Stage Funnel ────────────────────────────────────────────── #}
+<div class="bg-white border border-gray-200 rounded-lg p-5 mb-4">
+  <h2 class="text-sm font-semibold text-gray-700 mb-1">Stage Funnel</h2>
+  <p class="text-xs text-gray-400 mb-4">How many applications reached each stage of the pipeline.</p>
+  <div class="relative h-40">
+    <canvas id="funnelChart"></canvas>
+  </div>
+</div>
+
+{# ─── Row 5: Salary Ranges ───────────────────────────────────────────── #}
+{% if salary_rows %}
+<div class="bg-white border border-gray-200 rounded-lg p-5 mb-4">
+  <h2 class="text-sm font-semibold text-gray-700 mb-4">Salary Ranges</h2>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-gray-100 text-xs text-gray-400 uppercase tracking-wide">
+          <th class="text-left pb-2 pr-4">Company</th>
+          <th class="text-left pb-2 pr-4">Role</th>
+          <th class="text-left pb-2 pr-4">Range</th>
+          <th class="text-left pb-2">Status</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50">
+        {% for row in salary_rows %}
+        <tr>
+          <td class="py-2 pr-4 font-medium text-gray-700">{{ row.company }}</td>
+          <td class="py-2 pr-4 text-gray-500 text-xs">{{ row.role }}</td>
+          <td class="py-2 pr-4 font-mono text-gray-700">{{ row.display }}</td>
+          <td class="py-2">
+            <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium"
+              style="background-color: {{ row.status_color }}22; color: {{ row.status_color }}">
+              {{ row.status }}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{# ─── Row 6: Active Pipeline Staleness ───────────────────────────────── #}
+{% if pipeline_apps %}
+<div class="bg-white border border-gray-200 rounded-lg p-5 mb-4">
+  <h2 class="text-sm font-semibold text-gray-700 mb-1">Active Pipeline — Days Waiting</h2>
+  <p class="text-xs text-gray-400 mb-4">How long each active application has been sitting.</p>
+  <div class="space-y-3">
+    {% set max_days = pipeline_apps | map(attribute='days') | max %}
+    {% for app in pipeline_apps | sort(attribute='days', reverse=True) %}
+    <div>
+      <div class="flex items-center justify-between text-xs mb-1">
+        <span class="font-medium text-gray-700 truncate mr-2">{{ app.company }} — {{ app.role }}</span>
+        <span class="text-gray-400 flex-shrink-0">{{ app.days }}d</span>
+      </div>
+      <div class="w-full bg-gray-100 rounded-full h-2">
+        <div class="h-2 rounded-full transition-all"
+          style="width: {{ [(app.days / max_days * 100)|int, 4] | max }}%;
+                 background-color: {% if app.days > 21 %}#ef4444{% elif app.days > 14 %}#f97316{% elif app.days > 7 %}#eab308{% else %}#22c55e{% endif %}">
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    <p class="text-xs text-gray-300 pt-1">
+      Green &lt;7d &nbsp;·&nbsp; Yellow 7–14d &nbsp;·&nbsp; Orange 14–21d &nbsp;·&nbsp; Red &gt;21d
+    </p>
+  </div>
+</div>
+{% endif %}
+
+{# ─── Chart.js Scripts ───────────────────────────────────────────────── #}
+<script>
+  Chart.defaults.font.family = "system-ui, sans-serif";
+  Chart.defaults.font.size = 12;
+  Chart.defaults.plugins.legend.labels.boxWidth = 12;
+
+  // Status doughnut
+  new Chart(document.getElementById("statusChart"), {
+    type: "doughnut",
+    data: {
+      labels: {{ status_labels | safe }},
+      datasets: [{
+        data: {{ status_data | safe }},
+        backgroundColor: {{ status_colors | safe }},
+        borderWidth: 2,
+        borderColor: "#fff",
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: "bottom", labels: { padding: 10 } }
+      }
+    }
+  });
+
+  // Applications over time bar
+  new Chart(document.getElementById("timelineChart"), {
+    type: "bar",
+    data: {
+      labels: {{ timeline_labels | safe }},
+      datasets: [{
+        label: "Applications",
+        data: {{ timeline_data | safe }},
+        backgroundColor: "#3b82f688",
+        borderColor: "#3b82f6",
+        borderWidth: 1,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: "#f3f4f6" } },
+        x: { grid: { display: false } }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  // Company size bar
+  new Chart(document.getElementById("sizeChart"), {
+    type: "bar",
+    data: {
+      labels: {{ size_labels | safe }},
+      datasets: [{
+        label: "Applications",
+        data: {{ size_data | safe }},
+        backgroundColor: {{ size_colors | safe }}.map(c => c + "cc"),
+        borderColor: {{ size_colors | safe }},
+        borderWidth: 1,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: "#f3f4f6" } },
+        x: { grid: { display: false } }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  // Source horizontal bar
+  new Chart(document.getElementById("sourceChart"), {
+    type: "bar",
+    data: {
+      labels: {{ source_labels | safe }},
+      datasets: [{
+        label: "Applications",
+        data: {{ source_data | safe }},
+        backgroundColor: {{ source_colors | safe }}.map(c => c + "cc"),
+        borderColor: {{ source_colors | safe }},
+        borderWidth: 1,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      indexAxis: "y",
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: "#f3f4f6" } },
+        y: { grid: { display: false } }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  // Stage funnel bar
+  new Chart(document.getElementById("funnelChart"), {
+    type: "bar",
+    data: {
+      labels: {{ funnel_labels | safe }},
+      datasets: [{
+        label: "Applications reached",
+        data: {{ funnel_data | safe }},
+        backgroundColor: {{ funnel_colors | safe }}.map(c => c + "99"),
+        borderColor: {{ funnel_colors | safe }},
+        borderWidth: 1,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: "#f3f4f6" } },
+        x: { grid: { display: false } }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+</script>
+
+{% endif %} {# end no_data #}
+{% endblock %}

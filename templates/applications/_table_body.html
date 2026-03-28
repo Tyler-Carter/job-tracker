@@ -1,0 +1,11 @@
+{% if apps %}
+  {% for app in apps %}
+    {% include "applications/_row.html" %}
+  {% endfor %}
+{% else %}
+  <tr>
+    <td colspan="7" class="py-10 text-center text-gray-400 text-sm">
+      No applications found. Add one above.
+    </td>
+  </tr>
+{% endif %}

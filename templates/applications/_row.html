@@ -1,0 +1,34 @@
+<tr id="row-{{ app.id }}" class="hover:bg-gray-50 transition-colors">
+  <td class="py-3 px-4">
+    <a href="{{ url_for('applications.get_application', app_id=app.id) }}"
+       class="font-medium text-blue-600 hover:text-blue-800 hover:underline">{{ app.company_name }}</a>
+  </td>
+  <td class="py-3 px-4 text-gray-600 text-sm leading-tight">{{ app.role_title }}</td>
+  <td class="py-3 px-4 text-gray-400 text-sm hidden sm:table-cell">{{ app.date_applied.strftime('%b %d, %Y') }}</td>
+  <td class="py-3 px-4">
+    <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold {{ status_badge[app.current_status] }}">
+      {{ app.current_status.value }}
+    </span>
+  </td>
+  <td class="py-3 px-4 text-gray-400 text-sm hidden md:table-cell">{{ app.source.value }}</td>
+  <td class="py-3 px-4 text-gray-400 text-sm hidden lg:table-cell font-mono">{{ app.salary_display() }}</td>
+  {% if session.get('is_admin') %}
+  <td class="py-3 px-4 text-right whitespace-nowrap">
+    <button
+      hx-get="{{ url_for('applications.edit_application', app_id=app.id) }}"
+      hx-target="#row-{{ app.id }}"
+      hx-swap="outerHTML"
+      class="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-gray-700 px-2 py-1 rounded hover:bg-gray-100 transition-colors">
+      Edit
+    </button>
+    <button
+      hx-post="{{ url_for('applications.delete_application', app_id=app.id) }}"
+      hx-target="#row-{{ app.id }}"
+      hx-swap="outerHTML"
+      hx-confirm="Delete this application?"
+      class="inline-flex items-center gap-1 text-xs text-red-400 hover:text-red-600 px-2 py-1 rounded hover:bg-red-50 transition-colors">
+      Delete
+    </button>
+  </td>
+  {% endif %}
+</tr>

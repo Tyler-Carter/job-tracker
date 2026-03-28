@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Job Tracker{% endblock %}
+
+{% block content %}
+
+{# ── Project hero (visible to all visitors) ───────────────────────────── #}
+<div class="bg-white border border-gray-200 rounded-xl p-6 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+  <div>
+    <h1 class="text-xl font-semibold text-gray-900 mb-1">Job Application Tracker</h1>
+    <p class="text-sm text-gray-500 max-w-xl">
+      A full-stack personal tracker built to log applications, monitor pipeline stages, and surface
+      analytics about which roles, companies, and outreach channels yield the best results.
+    </p>
+    <div class="flex flex-wrap gap-2 mt-3">
+      {% set stack = ['Python', 'Flask', 'SQLAlchemy', 'HTMX', 'Tailwind CSS', 'Chart.js'] %}
+      {% for tag in stack %}
+        <span class="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full font-medium">{{ tag }}</span>
+      {% endfor %}
+    </div>
+  </div>
+  {% if session.get('is_admin') %}
+    <button
+      hx-get="{{ url_for('applications.new_application') }}"
+      hx-target="#add-form-container"
+      hx-swap="innerHTML"
+      class="flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      Add Application
+    </button>
+  {% else %}
+    <a href="{{ url_for('login') }}"
+       class="flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2 border border-gray-200 text-gray-500 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+      </svg>
+      Viewing as Guest
+    </a>
+  {% endif %}
+</div>
+
+<div id="add-form-container"></div>
+
+{# ── Quick-stat pills ─────────────────────────────────────────────────── #}
+{% set total = apps | length %}
+<div class="flex flex-wrap gap-2 mb-4">
+  {% set counts = {} %}
+  {% for app in apps %}
+    {% if counts.update({app.current_status.value: (counts.get(app.current_status.value, 0) + 1)}) %}{% endif %}
+  {% endfor %}
+  <span class="text-sm text-gray-500 font-medium self-center">{{ total }} application{{ 's' if total != 1 }}</span>
+  {% for status in statuses %}
+    {% if counts.get(status.value) %}
+      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium {{ status_badge[status] }}">
+        {{ status.value }}: {{ counts[status.value] }}
+      </span>
+    {% endif %}
+  {% endfor %}
+</div>
+
+{# ── Filters ──────────────────────────────────────────────────────────── #}
+<div class="flex flex-wrap items-center gap-2 mb-3">
+  <span class="text-xs text-gray-400 font-medium">Filter:</span>
+  <select name="status"
+    hx-get="{{ url_for('applications.list_applications') }}"
+    hx-target="#app-table-body"
+    hx-trigger="change"
+    hx-include="[name='status'],[name='source']"
+    hx-push-url="true"
+    class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-300">
+    <option value="">All Statuses</option>
+    {% for s in statuses %}
+      <option value="{{ s.value }}" {% if s.value == status_filter %}selected{% endif %}>{{ s.value }}</option>
+    {% endfor %}
+  </select>
+
+  <select name="source"
+    hx-get="{{ url_for('applications.list_applications') }}"
+    hx-target="#app-table-body"
+    hx-trigger="change"
+    hx-include="[name='status'],[name='source']"
+    hx-push-url="true"
+    class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-300">
+    <option value="">All Sources</option>
+    {% for s in sources %}
+      <option value="{{ s.value }}" {% if s.value == source_filter %}selected{% endif %}>{{ s.value }}</option>
+    {% endfor %}
+  </select>
+</div>
+
+{# ── Table ────────────────────────────────────────────────────────────── #}
+<div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 border-b border-gray-200">
+        <tr>
+          <th class="py-3 px-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Company</th>
+          <th class="py-3 px-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Role</th>
+          <th class="py-3 px-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide hidden sm:table-cell">Applied</th>
+          <th class="py-3 px-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Status</th>
+          <th class="py-3 px-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide hidden md:table-cell">Source</th>
+          <th class="py-3 px-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide hidden lg:table-cell">Salary</th>
+          {% if session.get('is_admin') %}
+          <th class="py-3 px-4 text-right text-xs font-semibold text-gray-400 uppercase tracking-wide">Actions</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody id="app-table-body" class="divide-y divide-gray-100">
+        {% include "applications/_table_body.html" %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

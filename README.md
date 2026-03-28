@@ -1,6 +1,6 @@
-# JobTracker
+# Personal Job Application Tracker with AI Analytics
 
-> A personal job application tracker with pipeline management, analytics, and AI-powered job description analysis — built with Flask, HTMX, and Tailwind CSS.
+> A personal job application tracker with pipeline management, a data-story analytics dashboard, and AI-powered job description analysis — built with Flask, HTMX, and Tailwind CSS.
 
 ![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.1-lightgrey?logo=flask)
@@ -11,7 +11,7 @@
 
 ## Overview
 
-JobTracker helps you manage your job search from first application to final decision. Log every application, track each interview stage, surface analytics that reveal which channels and company sizes are actually converting, and use AI to extract insights from job descriptions.
+JobTracker helps you manage your job search from first application to final decision. Log every application, track each interview stage, surface analytics that reveal which channels and company sizes are actually converting, and use AI to extract insights from job descriptions — including a live-streaming strategy advisor that analyzes your full application history.
 
 The app runs in **public read-only mode** by default — any visitor can view the data. Write access (add, edit, delete, AI analysis) is protected behind a single admin password, making it easy to share your live pipeline without exposing controls.
 
@@ -24,29 +24,43 @@ The app runs in **public read-only mode** by default — any visitor can view th
 - Filter the dashboard table by status and source channel in real time (no page reload)
 - View a full timeline of stage events per application (phone screen, technical, final round, etc.)
 - Log stage outcomes (passed / failed / withdrew / pending) with dates and notes
-- Current status auto-syncs to the latest logged stage event
 
 ### AI Analysis (powered by Groq + Llama 3.3 70B)
-- **Skills & Keywords** — extracts required skills, technologies, nice-to-haves, experience level, and key responsibilities from the job posting
-- **Job Fit Summary** — generates a narrative summary of what the role involves, role type (IC / manager / hybrid), seniority signals, and red/green flags
-- **Interview Prep** — produces targeted behavioral, technical, and role-specific questions plus questions to ask the interviewer
-- Results are cached in the database — subsequent page loads are instant with no repeat API calls
-- Admin-only "Refresh" button to re-run analysis when a job description is updated
 
-### Analytics Dashboard
-- Summary cards: total applications, active pipeline, responded count, response rate
-- Status breakdown doughnut chart
-- Applications submitted over time (weekly bar chart)
-- Company size and source channel breakdown charts
-- Stage conversion funnel
-- Salary range table and pipeline staleness tracker (days since last activity)
+All AI features use the existing HTMX → Flask → Groq → HTML fragment pattern, with structured JSON outputs, versioned prompts, and a 30-second in-process rate limiter with graceful cache fallback.
+
+**Per-application analysis (on the detail page):**
+- **Skills & Keywords** — extracts required skills, technologies, nice-to-haves, experience level, and key responsibilities
+- **Job Fit Summary** — narrative summary of the role, type (IC / manager / hybrid), seniority signals, and red/green flags
+- **Interview Prep** — 10 targeted questions (behavioral, technical, role-specific, questions to ask); behavioral questions include collapsible STAR-framework answer outlines
+- Results cached in the database — subsequent loads are instant; admin "Refresh" re-runs analysis
+
+**Analytics page AI tools:**
+- **JD Analyzer** — paste any raw job description to extract required skills, nice-to-haves, seniority level, red flags (e.g. "wear many hats", "rockstar"), green flags (e.g. explicit salary range), and culture signals
+- **Strategy Advisor** — analyzes your full application history via Groq streaming API; text generates live in the browser via Server-Sent Events, then reformats into a structured report with source analysis, funnel analysis, pacing insights, and top recommendations
+
+### Analytics Dashboard — Data Story Layout
+
+The analytics page is structured as a four-act data narrative:
+
+1. **Where Do You Stand?** — KPI cards (total, active, response rate with ~15% industry benchmark, offers) and an auto-generated plain-English snapshot of your search
+2. **What's Working?** — Source performance table showing callback rates per channel (uses stage event history to capture true callbacks, not just current status), status breakdown, weekly application timeline, and company size breakdown
+3. **What Needs Attention?** — Salary range table and active pipeline staleness tracker (days waiting, color-coded by urgency)
+4. **What Does the Data Say?** — Strategy Advisor (live-streaming AI) and JD Analyzer (paste-and-analyze tool)
+
+The stage funnel chart displays conversion percentages between each pipeline stage.
+
+### AI Architecture (portfolio talking points)
+- **Structured JSON outputs** — Groq is forced to return typed JSON via `response_format={"type": "json_object"}`; responses are validated with `json.loads` before rendering
+- **Streaming responses** — Strategy Advisor uses `stream=True` with Flask's `stream_with_context` returning `text/event-stream`; `X-Accel-Buffering: no` disables Railway's nginx buffering for real-time delivery
+- **Prompt versioning** — all system prompts live in `prompts.py` under version keys (`v1.0`, `v1.1`); `CURRENT_VERSION` is the single source of truth used by all routes; v1.0 is preserved verbatim for audit/rollback
+- **Rate limiting + error states** — 30-second in-process rate limiter keyed by `(app_id, analysis_type)`; degrades gracefully by serving stale cache when available rather than blocking with an error
 
 ### Auth & UX
 - Public read-only mode; all writes protected by `@require_admin` decorator
 - Dark/light mode toggle with localStorage persistence
-- HTMX-powered inline editing and filtering with no JS framework required
+- HTMX-powered inline filtering, AI triggers, and result swaps — no JS framework required
 - Responsive layout with Tailwind CSS
-- Flash messages for all create/update/delete actions
 
 ---
 
@@ -59,6 +73,7 @@ The app runs in **public read-only mode** by default — any visitor can view th
 | Frontend    | Jinja2, HTMX 2.0, Tailwind CSS (CDN)   |
 | Charts      | Chart.js 4.4 (CDN)                      |
 | AI          | Groq API, Llama 3.3 70B                 |
+| Streaming   | Flask SSE (`stream_with_context`), `EventSource` |
 | Database    | SQLite (dev) / PostgreSQL (prod)        |
 | Server      | Gunicorn 23.0                           |
 | Deployment  | Railway                                 |
@@ -72,7 +87,7 @@ The app runs in **public read-only mode** by default — any visitor can view th
 
 - Python 3.12+
 - [uv](https://docs.astral.sh/uv/) — fast Python package manager
-- A free [Groq API key](https://console.groq.com) for AI analysis features
+- A free [Groq API key](https://console.groq.com) for AI features
 
 ### Installation
 
@@ -105,22 +120,22 @@ uv run flask db upgrade
 uv run flask run
 ```
 
-The app will be available at `http://localhost:5000`. Log in at `/login` with your `ADMIN_PASSWORD` to enable write access and AI analysis.
+The app will be available at `http://localhost:5000`. Log in at `/login` with your `ADMIN_PASSWORD` to enable write access and AI features.
 
 ---
 
 ## Environment Variables
 
-| Variable              | Required | Default                   | Description                                      |
-|-----------------------|----------|---------------------------|--------------------------------------------------|
-| `SECRET_KEY`          | Yes      | `dev-secret-...`          | Flask session signing key — change in production |
-| `ADMIN_PASSWORD`      | Yes      | `dev-admin`               | Password to unlock write access                  |
-| `GROQ_API_KEY`        | Yes*     | —                         | Groq API key for AI analysis (free at console.groq.com) |
-| `DATABASE_URL`        | No       | `sqlite:///jobtracker.db` | Database connection string                       |
-| `FLASK_APP`           | No       | `app.py`                  | Flask entry point (set in `.flaskenv`)           |
-| `FLASK_DEBUG`         | No       | `0`                       | Enable debug mode locally                        |
+| Variable         | Required | Default                   | Description                                             |
+|------------------|----------|---------------------------|---------------------------------------------------------|
+| `SECRET_KEY`     | Yes      | `dev-secret-...`          | Flask session signing key — change in production        |
+| `ADMIN_PASSWORD` | Yes      | `dev-admin`               | Password to unlock write access                         |
+| `GROQ_API_KEY`   | Yes*     | —                         | Groq API key (free at console.groq.com)                 |
+| `DATABASE_URL`   | No       | `sqlite:///jobtracker.db` | Database connection string                              |
+| `FLASK_APP`      | No       | `app.py`                  | Flask entry point (set in `.flaskenv`)                  |
+| `FLASK_DEBUG`    | No       | `0`                       | Enable debug mode locally                               |
 
-> \* Required only for AI analysis features. The rest of the app works without it.
+> \* Required only for AI features. The rest of the app works without it.
 >
 > In production, Railway injects `DATABASE_URL` automatically when a PostgreSQL add-on is attached.
 
@@ -132,10 +147,11 @@ The app will be available at `http://localhost:5000`. Log in at `/login` with yo
 JobTracker/
 ├── app.py                    # App factory, auth routes, blueprint registration
 ├── models.py                 # SQLAlchemy models: Application, StageEvent, AIAnalysis, enums
+├── prompts.py                # Versioned AI prompt registry (v1.0 archive + v1.1 active)
 ├── routes/
 │   ├── applications.py       # CRUD routes (admin-protected writes)
-│   ├── analytics.py          # Analytics queries and Chart.js data
-│   └── ai.py                 # AI analysis routes (Groq API integration)
+│   ├── analytics.py          # Analytics queries, JD analyzer, strategy stream (SSE)
+│   └── ai.py                 # Per-application AI analysis routes with rate limiter
 ├── templates/
 │   ├── base.html             # Master layout: nav, dark mode toggle, flash messages
 │   ├── login.html            # Admin login page
@@ -149,9 +165,12 @@ JobTracker/
 │   │   ├── _ai_panel.html    # AI analysis three-card panel
 │   │   ├── _ai_result_skills.html    # Skills & keywords result partial
 │   │   ├── _ai_result_fit.html       # Job fit summary result partial
-│   │   └── _ai_result_interview.html # Interview prep result partial
+│   │   └── _ai_result_interview.html # Interview prep + STAR outlines partial
 │   └── analytics/
-│       └── index.html        # Analytics dashboard with Chart.js
+│       ├── index.html               # Four-act analytics dashboard
+│       ├── _strategy_panel.html     # Strategy Advisor SSE stream panel
+│       ├── _jd_analyzer.html        # JD paste form
+│       └── _jd_result.html          # JD analysis result fragment
 ├── migrations/               # Alembic migration history
 ├── pyproject.toml            # Project dependencies (uv)
 ├── Procfile                  # Gunicorn start command
@@ -189,7 +208,6 @@ The health check pings `GET /` to confirm the app is live.
 
 - [ ] CSV export of all applications
 - [ ] Resume upload and ATS match score against job description
-- [ ] Response rate breakdown by source channel (analytics)
 - [ ] Email/notification reminders for stale applications
 
 ---

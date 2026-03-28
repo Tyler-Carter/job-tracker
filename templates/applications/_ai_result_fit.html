@@ -1,0 +1,48 @@
+{% if error %}
+  <p class="text-sm text-red-500 dark:text-red-400 py-3">{{ error }}</p>
+{% elif result %}
+  {% if cached_at %}
+    <p class="text-xs text-gray-400 dark:text-gray-500 mb-3">Analyzed {{ cached_at.strftime('%b %d, %Y') }}</p>
+  {% endif %}
+
+  <div class="flex gap-2 mb-3">
+    {% if result.role_type %}
+      <span class="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300">{{ result.role_type }}</span>
+    {% endif %}
+    {% if result.seniority_signal %}
+      <span class="text-xs text-gray-500 dark:text-gray-400 self-center">{{ result.seniority_signal }}</span>
+    {% endif %}
+  </div>
+
+  {% if result.summary %}
+    <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-3">{{ result.summary }}</p>
+  {% endif %}
+
+  {% if result.green_flags %}
+    <div class="mb-3">
+      <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">Green Flags</p>
+      <ul class="space-y-1">
+        {% for flag in result.green_flags %}
+          <li class="text-xs text-green-700 dark:text-green-400 flex gap-1.5">
+            <span class="flex-shrink-0">+</span>{{ flag }}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  {% if result.red_flags %}
+    <div>
+      <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">Red Flags</p>
+      <ul class="space-y-1">
+        {% for flag in result.red_flags %}
+          <li class="text-xs text-red-600 dark:text-red-400 flex gap-1.5">
+            <span class="flex-shrink-0">!</span>{{ flag }}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+{% else %}
+  <p class="text-sm text-gray-400 dark:text-gray-500 py-3 text-center">Not yet analyzed.</p>
+{% endif %}

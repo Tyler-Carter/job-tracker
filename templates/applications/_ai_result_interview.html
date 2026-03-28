@@ -1,0 +1,61 @@
+{% if error %}
+  <p class="text-sm text-red-500 dark:text-red-400 py-3">{{ error }}</p>
+{% elif result %}
+  {% if cached_at %}
+    <p class="text-xs text-gray-400 dark:text-gray-500 mb-3">Analyzed {{ cached_at.strftime('%b %d, %Y') }}</p>
+  {% endif %}
+
+  {% if result.behavioral %}
+    <div class="mb-4">
+      <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">Behavioral</p>
+      <ul class="space-y-1.5">
+        {% for q in result.behavioral %}
+          <li class="text-xs text-gray-600 dark:text-gray-400 flex gap-1.5">
+            <span class="text-gray-300 dark:text-gray-600 flex-shrink-0">Q</span>{{ q }}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  {% if result.technical %}
+    <div class="mb-4">
+      <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">Technical</p>
+      <ul class="space-y-1.5">
+        {% for q in result.technical %}
+          <li class="text-xs text-gray-600 dark:text-gray-400 flex gap-1.5">
+            <span class="text-gray-300 dark:text-gray-600 flex-shrink-0">Q</span>{{ q }}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  {% if result.role_specific %}
+    <div class="mb-4">
+      <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">Role-Specific</p>
+      <ul class="space-y-1.5">
+        {% for q in result.role_specific %}
+          <li class="text-xs text-gray-600 dark:text-gray-400 flex gap-1.5">
+            <span class="text-gray-300 dark:text-gray-600 flex-shrink-0">Q</span>{{ q }}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  {% if result.questions_to_ask_them %}
+    <div>
+      <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">Ask Them</p>
+      <ul class="space-y-1.5">
+        {% for q in result.questions_to_ask_them %}
+          <li class="text-xs text-teal-600 dark:text-teal-400 flex gap-1.5">
+            <span class="flex-shrink-0">?</span>{{ q }}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+{% else %}
+  <p class="text-sm text-gray-400 dark:text-gray-500 py-3 text-center">Not yet analyzed.</p>
+{% endif %}

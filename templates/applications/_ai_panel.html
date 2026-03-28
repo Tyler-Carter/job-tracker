@@ -1,0 +1,95 @@
+{% set analyses = {a.analysis_type: a for a in app.ai_analyses} %}
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+  {# ── Skills Card ── #}
+  {%- set cached_skills = analyses.get(analysis_types.SKILLS) %}
+  <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Skills &amp; Keywords</h3>
+      {% if session.get('is_admin') %}
+        <button
+          hx-post="{{ url_for('ai.run_analysis', app_id=app.id, analysis_type='skills') }}"
+          hx-target="#ai-result-skills"
+          hx-swap="innerHTML"
+          hx-indicator="#ai-spinner-skills"
+          class="inline-flex items-center gap-1 text-xs px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors">
+          <svg id="ai-spinner-skills" class="htmx-indicator animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+          </svg>
+          {{ 'Refresh' if cached_skills else 'Run' }}
+        </button>
+      {% endif %}
+    </div>
+    <div id="ai-result-skills">
+      {% if cached_skills %}
+        {% set result = cached_skills.result_json | fromjson %}
+        {% include "applications/_ai_result_skills.html" with context %}
+      {% else %}
+        <p class="text-sm text-gray-400 dark:text-gray-500 py-3 text-center">Not yet analyzed.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Fit Summary Card ── #}
+  {%- set cached_fit = analyses.get(analysis_types.FIT_SUMMARY) %}
+  <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Job Fit Summary</h3>
+      {% if session.get('is_admin') %}
+        <button
+          hx-post="{{ url_for('ai.run_analysis', app_id=app.id, analysis_type='fit_summary') }}"
+          hx-target="#ai-result-fit"
+          hx-swap="innerHTML"
+          hx-indicator="#ai-spinner-fit"
+          class="inline-flex items-center gap-1 text-xs px-2 py-1 bg-teal-600 hover:bg-teal-700 text-white rounded transition-colors">
+          <svg id="ai-spinner-fit" class="htmx-indicator animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+          </svg>
+          {{ 'Refresh' if cached_fit else 'Run' }}
+        </button>
+      {% endif %}
+    </div>
+    <div id="ai-result-fit">
+      {% if cached_fit %}
+        {% set result = cached_fit.result_json | fromjson %}
+        {% include "applications/_ai_result_fit.html" with context %}
+      {% else %}
+        <p class="text-sm text-gray-400 dark:text-gray-500 py-3 text-center">Not yet analyzed.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Interview Prep Card ── #}
+  {%- set cached_interview = analyses.get(analysis_types.INTERVIEW) %}
+  <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Interview Prep</h3>
+      {% if session.get('is_admin') %}
+        <button
+          hx-post="{{ url_for('ai.run_analysis', app_id=app.id, analysis_type='interview') }}"
+          hx-target="#ai-result-interview"
+          hx-swap="innerHTML"
+          hx-indicator="#ai-spinner-interview"
+          class="inline-flex items-center gap-1 text-xs px-2 py-1 bg-violet-600 hover:bg-violet-700 text-white rounded transition-colors">
+          <svg id="ai-spinner-interview" class="htmx-indicator animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+          </svg>
+          {{ 'Refresh' if cached_interview else 'Run' }}
+        </button>
+      {% endif %}
+    </div>
+    <div id="ai-result-interview">
+      {% if cached_interview %}
+        {% set result = cached_interview.result_json | fromjson %}
+        {% include "applications/_ai_result_interview.html" with context %}
+      {% else %}
+        <p class="text-sm text-gray-400 dark:text-gray-500 py-3 text-center">Not yet analyzed.</p>
+      {% endif %}
+    </div>
+  </div>
+
+</div>

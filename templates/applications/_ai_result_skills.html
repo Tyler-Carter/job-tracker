@@ -1,0 +1,62 @@
+{% if error %}
+  <p class="text-sm text-red-500 dark:text-red-400 py-3">{{ error }}</p>
+{% elif result %}
+  {% if cached_at %}
+    <p class="text-xs text-gray-400 dark:text-gray-500 mb-3">Analyzed {{ cached_at.strftime('%b %d, %Y') }}</p>
+  {% endif %}
+
+  {% if result.experience_level %}
+    <div class="mb-3">
+      <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Level</span>
+      <span class="ml-2 inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300">{{ result.experience_level }}</span>
+    </div>
+  {% endif %}
+
+  {% if result.required_skills %}
+    <div class="mb-3">
+      <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">Required Skills</p>
+      <div class="flex flex-wrap gap-1.5">
+        {% for skill in result.required_skills %}
+          <span class="px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">{{ skill }}</span>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  {% if result.technologies %}
+    <div class="mb-3">
+      <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">Technologies</p>
+      <div class="flex flex-wrap gap-1.5">
+        {% for tech in result.technologies %}
+          <span class="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 font-mono">{{ tech }}</span>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  {% if result.nice_to_have_skills %}
+    <div class="mb-3">
+      <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">Nice to Have</p>
+      <div class="flex flex-wrap gap-1.5">
+        {% for skill in result.nice_to_have_skills %}
+          <span class="px-2 py-0.5 rounded text-xs bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400 border border-gray-200 dark:border-gray-700">{{ skill }}</span>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  {% if result.key_responsibilities %}
+    <div>
+      <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">Key Responsibilities</p>
+      <ul class="space-y-1">
+        {% for item in result.key_responsibilities %}
+          <li class="text-xs text-gray-600 dark:text-gray-400 flex gap-1.5">
+            <span class="text-gray-300 dark:text-gray-600 flex-shrink-0">•</span>{{ item }}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+{% else %}
+  <p class="text-sm text-gray-400 dark:text-gray-500 py-3 text-center">Not yet analyzed.</p>
+{% endif %}

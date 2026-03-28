@@ -9,37 +9,37 @@
 </div>
 
 {% if no_data %}
-  <div class="bg-white border border-gray-200 rounded-lg p-10 text-center">
-    <p class="text-gray-400 text-sm">No applications yet. Start logging applications to see analytics.</p>
+  <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-10 text-center">
+    <p class="text-gray-400 dark:text-gray-500 text-sm">No applications yet. Start logging applications to see analytics.</p>
   </div>
 
 {% else %}
 
 {# ─── Summary Cards ──────────────────────────────────────────────────── #}
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-  <div class="bg-white border border-gray-200 rounded-lg p-5">
-    <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Total Applied</p>
-    <p class="text-3xl font-bold text-gray-800">{{ total }}</p>
+  <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+    <p class="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1">Total Applied</p>
+    <p class="text-3xl font-bold text-gray-800 dark:text-gray-100">{{ total }}</p>
   </div>
-  <div class="bg-white border border-gray-200 rounded-lg p-5">
-    <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Active</p>
-    <p class="text-3xl font-bold text-blue-600">{{ active }}</p>
-    <p class="text-xs text-gray-400 mt-0.5">in pipeline</p>
+  <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+    <p class="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1">Active</p>
+    <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ active }}</p>
+    <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">in pipeline</p>
   </div>
-  <div class="bg-white border border-gray-200 rounded-lg p-5">
-    <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Responded</p>
-    <p class="text-3xl font-bold text-gray-800">{{ responded }}</p>
-    <p class="text-xs text-gray-400 mt-0.5">any status change</p>
+  <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+    <p class="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1">Responded</p>
+    <p class="text-3xl font-bold text-gray-800 dark:text-gray-100">{{ responded }}</p>
+    <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">any status change</p>
   </div>
-  <div class="bg-white border border-gray-200 rounded-lg p-5">
-    <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Response Rate</p>
-    <p class="text-3xl font-bold {% if response_rate >= 50 %}text-green-600{% elif response_rate >= 25 %}text-yellow-600{% else %}text-red-500{% endif %}">
+  <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+    <p class="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1">Response Rate</p>
+    <p class="text-3xl font-bold {% if response_rate >= 50 %}text-green-600 dark:text-green-400{% elif response_rate >= 25 %}text-yellow-600 dark:text-yellow-400{% else %}text-red-500 dark:text-red-400{% endif %}">
       {{ response_rate }}%
     </p>
     {% if offers %}
-      <p class="text-xs text-green-600 mt-0.5">{{ offers }} offer{{ 's' if offers != 1 }}</p>
+      <p class="text-xs text-green-600 dark:text-green-400 mt-0.5">{{ offers }} offer{{ 's' if offers != 1 }}</p>
     {% else %}
-      <p class="text-xs text-gray-400 mt-0.5">0 offers yet</p>
+      <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">0 offers yet</p>
     {% endif %}
   </div>
 </div>
@@ -48,16 +48,16 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
 
   {# Status Breakdown #}
-  <div class="bg-white border border-gray-200 rounded-lg p-5">
-    <h2 class="text-sm font-semibold text-gray-700 mb-4">Status Breakdown</h2>
+  <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+    <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Status Breakdown</h2>
     <div class="relative h-52">
       <canvas id="statusChart"></canvas>
     </div>
   </div>
 
   {# Applications Over Time #}
-  <div class="bg-white border border-gray-200 rounded-lg p-5 lg:col-span-2">
-    <h2 class="text-sm font-semibold text-gray-700 mb-4">Applications Over Time <span class="text-xs font-normal text-gray-400">(by week)</span></h2>
+  <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5 lg:col-span-2">
+    <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Applications Over Time <span class="text-xs font-normal text-gray-400 dark:text-gray-500">(by week)</span></h2>
     <div class="relative h-52">
       <canvas id="timelineChart"></canvas>
     </div>
@@ -68,15 +68,15 @@
 {# ─── Row 3: Company Size + Source Breakdown ─────────────────────────── #}
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
 
-  <div class="bg-white border border-gray-200 rounded-lg p-5">
-    <h2 class="text-sm font-semibold text-gray-700 mb-4">By Company Size</h2>
+  <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+    <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">By Company Size</h2>
     <div class="relative h-44">
       <canvas id="sizeChart"></canvas>
     </div>
   </div>
 
-  <div class="bg-white border border-gray-200 rounded-lg p-5">
-    <h2 class="text-sm font-semibold text-gray-700 mb-4">By Source Channel</h2>
+  <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+    <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">By Source Channel</h2>
     <div class="relative h-44">
       <canvas id="sourceChart"></canvas>
     </div>
@@ -85,9 +85,9 @@
 </div>
 
 {# ─── Row 4: Stage Funnel ────────────────────────────────────────────── #}
-<div class="bg-white border border-gray-200 rounded-lg p-5 mb-4">
-  <h2 class="text-sm font-semibold text-gray-700 mb-1">Stage Funnel</h2>
-  <p class="text-xs text-gray-400 mb-4">How many applications reached each stage of the pipeline.</p>
+<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5 mb-4">
+  <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Stage Funnel</h2>
+  <p class="text-xs text-gray-400 dark:text-gray-500 mb-4">How many applications reached each stage of the pipeline.</p>
   <div class="relative h-40">
     <canvas id="funnelChart"></canvas>
   </div>
@@ -95,24 +95,24 @@
 
 {# ─── Row 5: Salary Ranges ───────────────────────────────────────────── #}
 {% if salary_rows %}
-<div class="bg-white border border-gray-200 rounded-lg p-5 mb-4">
-  <h2 class="text-sm font-semibold text-gray-700 mb-4">Salary Ranges</h2>
+<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5 mb-4">
+  <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Salary Ranges</h2>
   <div class="overflow-x-auto">
     <table class="w-full text-sm">
       <thead>
-        <tr class="border-b border-gray-100 text-xs text-gray-400 uppercase tracking-wide">
+        <tr class="border-b border-gray-100 dark:border-gray-700 text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide">
           <th class="text-left pb-2 pr-4">Company</th>
           <th class="text-left pb-2 pr-4">Role</th>
           <th class="text-left pb-2 pr-4">Range</th>
           <th class="text-left pb-2">Status</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-gray-50">
+      <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
         {% for row in salary_rows %}
         <tr>
-          <td class="py-2 pr-4 font-medium text-gray-700">{{ row.company }}</td>
-          <td class="py-2 pr-4 text-gray-500 text-xs">{{ row.role }}</td>
-          <td class="py-2 pr-4 font-mono text-gray-700">{{ row.display }}</td>
+          <td class="py-2 pr-4 font-medium text-gray-700 dark:text-gray-300">{{ row.company }}</td>
+          <td class="py-2 pr-4 text-gray-500 dark:text-gray-400 text-xs">{{ row.role }}</td>
+          <td class="py-2 pr-4 font-mono text-gray-700 dark:text-gray-300">{{ row.display }}</td>
           <td class="py-2">
             <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium"
               style="background-color: {{ row.status_color }}22; color: {{ row.status_color }}">
@@ -129,18 +129,18 @@
 
 {# ─── Row 6: Active Pipeline Staleness ───────────────────────────────── #}
 {% if pipeline_apps %}
-<div class="bg-white border border-gray-200 rounded-lg p-5 mb-4">
-  <h2 class="text-sm font-semibold text-gray-700 mb-1">Active Pipeline — Days Waiting</h2>
-  <p class="text-xs text-gray-400 mb-4">How long each active application has been sitting.</p>
+<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5 mb-4">
+  <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Active Pipeline — Days Waiting</h2>
+  <p class="text-xs text-gray-400 dark:text-gray-500 mb-4">How long each active application has been sitting.</p>
   <div class="space-y-3">
     {% set max_days = pipeline_apps | map(attribute='days') | max %}
     {% for app in pipeline_apps | sort(attribute='days', reverse=True) %}
     <div>
       <div class="flex items-center justify-between text-xs mb-1">
-        <span class="font-medium text-gray-700 truncate mr-2">{{ app.company }} — {{ app.role }}</span>
-        <span class="text-gray-400 flex-shrink-0">{{ app.days }}d</span>
+        <span class="font-medium text-gray-700 dark:text-gray-300 truncate mr-2">{{ app.company }} — {{ app.role }}</span>
+        <span class="text-gray-400 dark:text-gray-500 flex-shrink-0">{{ app.days }}d</span>
       </div>
-      <div class="w-full bg-gray-100 rounded-full h-2">
+      <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
         <div class="h-2 rounded-full transition-all"
           style="width: {{ [(app.days / max_days * 100)|int, 4] | max }}%;
                  background-color: {% if app.days > 21 %}#ef4444{% elif app.days > 14 %}#f97316{% elif app.days > 7 %}#eab308{% else %}#22c55e{% endif %}">
@@ -148,7 +148,7 @@
       </div>
     </div>
     {% endfor %}
-    <p class="text-xs text-gray-300 pt-1">
+    <p class="text-xs text-gray-300 dark:text-gray-600 pt-1">
       Green &lt;7d &nbsp;·&nbsp; Yellow 7–14d &nbsp;·&nbsp; Orange 14–21d &nbsp;·&nbsp; Red &gt;21d
     </p>
   </div>
@@ -157,9 +157,18 @@
 
 {# ─── Chart.js Scripts ───────────────────────────────────────────────── #}
 <script>
+  var isDark = document.documentElement.classList.contains('dark');
+  var gridColor  = isDark ? '#374151' : '#f3f4f6';  // gray-700 / gray-100
+  var tickColor  = isDark ? '#9ca3af' : '#6b7280';  // gray-400 / gray-500
+  var legendColor = isDark ? '#d1d5db' : '#374151'; // gray-300 / gray-700
+
   Chart.defaults.font.family = "system-ui, sans-serif";
   Chart.defaults.font.size = 12;
+  Chart.defaults.color = tickColor;
   Chart.defaults.plugins.legend.labels.boxWidth = 12;
+  Chart.defaults.plugins.legend.labels.color = legendColor;
+
+  var borderColor = isDark ? '#111827' : '#fff'; // gray-900 / white
 
   // Status doughnut
   new Chart(document.getElementById("statusChart"), {
@@ -170,7 +179,7 @@
         data: {{ status_data | safe }},
         backgroundColor: {{ status_colors | safe }},
         borderWidth: 2,
-        borderColor: "#fff",
+        borderColor: borderColor,
       }]
     },
     options: {
@@ -200,8 +209,8 @@
       responsive: true,
       maintainAspectRatio: false,
       scales: {
-        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: "#f3f4f6" } },
-        x: { grid: { display: false } }
+        y: { beginAtZero: true, ticks: { stepSize: 1, color: tickColor }, grid: { color: gridColor } },
+        x: { ticks: { color: tickColor }, grid: { display: false } }
       },
       plugins: { legend: { display: false } }
     }
@@ -225,8 +234,8 @@
       responsive: true,
       maintainAspectRatio: false,
       scales: {
-        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: "#f3f4f6" } },
-        x: { grid: { display: false } }
+        y: { beginAtZero: true, ticks: { stepSize: 1, color: tickColor }, grid: { color: gridColor } },
+        x: { ticks: { color: tickColor }, grid: { display: false } }
       },
       plugins: { legend: { display: false } }
     }
@@ -251,8 +260,8 @@
       responsive: true,
       maintainAspectRatio: false,
       scales: {
-        x: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: "#f3f4f6" } },
-        y: { grid: { display: false } }
+        x: { beginAtZero: true, ticks: { stepSize: 1, color: tickColor }, grid: { color: gridColor } },
+        y: { ticks: { color: tickColor }, grid: { display: false } }
       },
       plugins: { legend: { display: false } }
     }
@@ -276,8 +285,8 @@
       responsive: true,
       maintainAspectRatio: false,
       scales: {
-        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: "#f3f4f6" } },
-        x: { grid: { display: false } }
+        y: { beginAtZero: true, ticks: { stepSize: 1, color: tickColor }, grid: { color: gridColor } },
+        x: { ticks: { color: tickColor }, grid: { display: false } }
       },
       plugins: { legend: { display: false } }
     }

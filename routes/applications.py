@@ -15,13 +15,13 @@ from models import (
 bp = Blueprint("applications", __name__, url_prefix="/applications")
 
 STATUS_BADGE = {
-    ApplicationStatus.APPLIED: "bg-blue-100 text-blue-800",
-    ApplicationStatus.PHONE_SCREEN: "bg-yellow-100 text-yellow-800",
-    ApplicationStatus.TECHNICAL: "bg-purple-100 text-purple-800",
-    ApplicationStatus.FINAL_ROUND: "bg-orange-100 text-orange-800",
-    ApplicationStatus.OFFER: "bg-green-100 text-green-800",
-    ApplicationStatus.REJECTED: "bg-red-100 text-red-800",
-    ApplicationStatus.WITHDRAWN: "bg-gray-100 text-gray-800",
+    ApplicationStatus.APPLIED:      "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300",
+    ApplicationStatus.PHONE_SCREEN: "bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-300",
+    ApplicationStatus.TECHNICAL:    "bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300",
+    ApplicationStatus.FINAL_ROUND:  "bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300",
+    ApplicationStatus.OFFER:        "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300",
+    ApplicationStatus.REJECTED:     "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300",
+    ApplicationStatus.WITHDRAWN:    "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
 }
 
 

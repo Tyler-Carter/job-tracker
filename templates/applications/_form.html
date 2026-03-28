@@ -5,40 +5,40 @@
   hx-post="{{ action }}"
   hx-target="{{ '#row-' ~ application.id if is_edit else '#app-table-body' }}"
   hx-swap="{{ 'outerHTML' if is_edit else 'afterbegin' }}"
-  class="bg-white border border-gray-200 rounded-lg p-5 mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5 mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
   id="app-form">
 
   <div>
-    <label class="block text-xs font-medium text-gray-600 mb-1">Company *</label>
+    <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Company *</label>
     <input type="text" name="company_name"
       value="{{ form.company_name if form is defined else (application.company_name if is_edit else '') }}"
-      class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400
+      class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-1.5 text-sm bg-white dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-400
         {% if errors.company_name %}border-red-400{% endif %}" />
-    {% if errors.company_name %}<p class="text-xs text-red-500 mt-0.5">{{ errors.company_name }}</p>{% endif %}
+    {% if errors.company_name %}<p class="text-xs text-red-500 dark:text-red-400 mt-0.5">{{ errors.company_name }}</p>{% endif %}
   </div>
 
   <div>
-    <label class="block text-xs font-medium text-gray-600 mb-1">Role Title *</label>
+    <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Role Title *</label>
     <input type="text" name="role_title"
       value="{{ form.role_title if form is defined else (application.role_title if is_edit else '') }}"
-      class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400
+      class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-1.5 text-sm bg-white dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-400
         {% if errors.role_title %}border-red-400{% endif %}" />
-    {% if errors.role_title %}<p class="text-xs text-red-500 mt-0.5">{{ errors.role_title }}</p>{% endif %}
+    {% if errors.role_title %}<p class="text-xs text-red-500 dark:text-red-400 mt-0.5">{{ errors.role_title }}</p>{% endif %}
   </div>
 
   <div>
-    <label class="block text-xs font-medium text-gray-600 mb-1">Date Applied *</label>
+    <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Date Applied *</label>
     <input type="date" name="date_applied"
       value="{{ form.date_applied if form is defined else (application.date_applied.isoformat() if is_edit else today) }}"
-      class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400
+      class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-1.5 text-sm bg-white dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-400
         {% if errors.date_applied %}border-red-400{% endif %}" />
-    {% if errors.date_applied %}<p class="text-xs text-red-500 mt-0.5">{{ errors.date_applied }}</p>{% endif %}
+    {% if errors.date_applied %}<p class="text-xs text-red-500 dark:text-red-400 mt-0.5">{{ errors.date_applied }}</p>{% endif %}
   </div>
 
   <div>
-    <label class="block text-xs font-medium text-gray-600 mb-1">Status *</label>
+    <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Status *</label>
     <select name="current_status"
-      class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400">
+      class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-1.5 text-sm bg-white dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-400">
       {% set sel_status = form.current_status if form is defined else (application.current_status.value if is_edit else '') %}
       {% for s in statuses %}
         <option value="{{ s.value }}" {% if s.value == sel_status %}selected{% endif %}>{{ s.value }}</option>
@@ -47,9 +47,9 @@
   </div>
 
   <div>
-    <label class="block text-xs font-medium text-gray-600 mb-1">Source *</label>
+    <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Source *</label>
     <select name="source"
-      class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400
+      class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-1.5 text-sm bg-white dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-400
         {% if errors.source %}border-red-400{% endif %}">
       <option value="">— select —</option>
       {% set sel_source = form.source if form is defined else (application.source.value if is_edit else '') %}
@@ -57,13 +57,13 @@
         <option value="{{ s.value }}" {% if s.value == sel_source %}selected{% endif %}>{{ s.value }}</option>
       {% endfor %}
     </select>
-    {% if errors.source %}<p class="text-xs text-red-500 mt-0.5">{{ errors.source }}</p>{% endif %}
+    {% if errors.source %}<p class="text-xs text-red-500 dark:text-red-400 mt-0.5">{{ errors.source }}</p>{% endif %}
   </div>
 
   <div>
-    <label class="block text-xs font-medium text-gray-600 mb-1">Company Size *</label>
+    <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Company Size *</label>
     <select name="company_size"
-      class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400
+      class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-1.5 text-sm bg-white dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-400
         {% if errors.company_size %}border-red-400{% endif %}">
       <option value="">— select —</option>
       {% set sel_size = form.company_size if form is defined else (application.company_size.value if is_edit else '') %}
@@ -71,13 +71,13 @@
         <option value="{{ s.value }}" {% if s.value == sel_size %}selected{% endif %}>{{ s.value }}</option>
       {% endfor %}
     </select>
-    {% if errors.company_size %}<p class="text-xs text-red-500 mt-0.5">{{ errors.company_size }}</p>{% endif %}
+    {% if errors.company_size %}<p class="text-xs text-red-500 dark:text-red-400 mt-0.5">{{ errors.company_size }}</p>{% endif %}
   </div>
 
   <div>
-    <label class="block text-xs font-medium text-gray-600 mb-1">Company Type</label>
+    <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Company Type</label>
     <select name="company_type"
-      class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400">
+      class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-1.5 text-sm bg-white dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-400">
       {% set sel_type = form.company_type if form is defined else (application.company_type.value if is_edit else 'Unknown') %}
       {% for t in types %}
         <option value="{{ t.value }}" {% if t.value == sel_type %}selected{% endif %}>{{ t.value }}</option>
@@ -86,29 +86,29 @@
   </div>
 
   <div>
-    <label class="block text-xs font-medium text-gray-600 mb-1">Salary Min ($)</label>
+    <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Salary Min ($)</label>
     <input type="number" name="salary_min" min="0" step="1000"
       value="{{ form.salary_min if form is defined else (application.salary_min if is_edit and application.salary_min else '') }}"
       placeholder="e.g. 80000"
-      class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400
+      class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-1.5 text-sm bg-white dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-400
         {% if errors.salary_min %}border-red-400{% endif %}" />
-    {% if errors.salary_min %}<p class="text-xs text-red-500 mt-0.5">{{ errors.salary_min }}</p>{% endif %}
+    {% if errors.salary_min %}<p class="text-xs text-red-500 dark:text-red-400 mt-0.5">{{ errors.salary_min }}</p>{% endif %}
   </div>
 
   <div>
-    <label class="block text-xs font-medium text-gray-600 mb-1">Salary Max ($)</label>
+    <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Salary Max ($)</label>
     <input type="number" name="salary_max" min="0" step="1000"
       value="{{ form.salary_max if form is defined else (application.salary_max if is_edit and application.salary_max else '') }}"
       placeholder="e.g. 120000"
-      class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400
+      class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-1.5 text-sm bg-white dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-400
         {% if errors.salary_max %}border-red-400{% endif %}" />
-    {% if errors.salary_max %}<p class="text-xs text-red-500 mt-0.5">{{ errors.salary_max }}</p>{% endif %}
+    {% if errors.salary_max %}<p class="text-xs text-red-500 dark:text-red-400 mt-0.5">{{ errors.salary_max }}</p>{% endif %}
   </div>
 
   <div class="sm:col-span-2 lg:col-span-3">
-    <label class="block text-xs font-medium text-gray-600 mb-1">Notes</label>
+    <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Notes</label>
     <textarea name="notes" rows="2"
-      class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400">{{ form.notes if form is defined else (application.notes or '' if is_edit else '') }}</textarea>
+      class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-1.5 text-sm bg-white dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-400">{{ form.notes if form is defined else (application.notes or '' if is_edit else '') }}</textarea>
   </div>
 
   <div class="sm:col-span-2 lg:col-span-3 flex gap-2">
@@ -121,13 +121,13 @@
         hx-get="{{ url_for('applications.list_applications') }}"
         hx-target="#row-{{ application.id }}"
         hx-swap="outerHTML"
-        class="px-4 py-1.5 bg-gray-100 text-gray-700 text-sm rounded hover:bg-gray-200">
+        class="px-4 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm rounded hover:bg-gray-200 dark:hover:bg-gray-600">
         Cancel
       </button>
     {% else %}
       <button type="button"
         onclick="document.getElementById('add-form-container').innerHTML = ''"
-        class="px-4 py-1.5 bg-gray-100 text-gray-700 text-sm rounded hover:bg-gray-200">
+        class="px-4 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm rounded hover:bg-gray-200 dark:hover:bg-gray-600">
         Cancel
       </button>
     {% endif %}

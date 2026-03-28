@@ -4,8 +4,10 @@
 {% block content %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-<div class="flex items-center justify-between mb-6">
-  <h1 class="text-2xl font-semibold">Analytics</h1>
+{# ─── Page Header ─────────────────────────────────────────────────── #}
+<div class="mb-6">
+  <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Analytics</h1>
+  <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">A data story of your job search</p>
 </div>
 
 {% if no_data %}
@@ -15,49 +17,118 @@
 
 {% else %}
 
-{# ─── Summary Cards ──────────────────────────────────────────────────── #}
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+{# ═══════════════════════════════════════════════════════════════════ #}
+{# ACT 1 — WHERE DO YOU STAND?                                        #}
+{# ═══════════════════════════════════════════════════════════════════ #}
+
+{# ─── KPI Cards ───────────────────────────────────────────────────── #}
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+
   <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
     <p class="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1">Total Applied</p>
     <p class="text-3xl font-bold text-gray-800 dark:text-gray-100">{{ total }}</p>
   </div>
+
   <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
     <p class="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1">Active</p>
     <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ active }}</p>
     <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">in pipeline</p>
   </div>
-  <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
-    <p class="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1">Responded</p>
-    <p class="text-3xl font-bold text-gray-800 dark:text-gray-100">{{ responded }}</p>
-    <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">any status change</p>
-  </div>
+
   <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
     <p class="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1">Response Rate</p>
     <p class="text-3xl font-bold {% if response_rate >= 50 %}text-green-600 dark:text-green-400{% elif response_rate >= 25 %}text-yellow-600 dark:text-yellow-400{% else %}text-red-500 dark:text-red-400{% endif %}">
       {{ response_rate }}%
     </p>
+    <p class="text-xs mt-0.5 {% if response_rate >= 15 %}text-green-500 dark:text-green-500{% else %}text-gray-400 dark:text-gray-500{% endif %}">
+      {% if response_rate >= 15 %}Above ~15% industry avg{% else %}Industry avg ~15%{% endif %}
+    </p>
+  </div>
+
+  <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+    <p class="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1">Offers</p>
     {% if offers %}
-      <p class="text-xs text-green-600 dark:text-green-400 mt-0.5">{{ offers }} offer{{ 's' if offers != 1 }}</p>
+      <p class="text-3xl font-bold text-green-600 dark:text-green-400">{{ offers }}</p>
+      <p class="text-xs text-green-600 dark:text-green-400 mt-0.5">offer{{ 's' if offers != 1 }}</p>
     {% else %}
-      <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">0 offers yet</p>
+      <p class="text-3xl font-bold text-gray-800 dark:text-gray-100">0</p>
+      <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{{ responded }} responded</p>
     {% endif %}
   </div>
+
 </div>
 
-{# ─── Row 2: Status Doughnut + Applications Over Time ────────────────── #}
+{# ─── Snapshot Insight ────────────────────────────────────────────── #}
+{% if snapshot %}
+<div class="mb-6 px-4 py-3 bg-blue-50 dark:bg-blue-950 border border-blue-100 dark:border-blue-900 rounded-lg">
+  <p class="text-sm text-blue-700 dark:text-blue-300">{{ snapshot }}</p>
+</div>
+{% endif %}
+
+{# ═══════════════════════════════════════════════════════════════════ #}
+{# ACT 2 — WHAT'S WORKING?                                            #}
+{# ═══════════════════════════════════════════════════════════════════ #}
+
+<div class="flex items-center gap-3 mb-4">
+  <h2 class="text-base font-semibold text-gray-800 dark:text-gray-100 whitespace-nowrap">What's Working</h2>
+  <div class="flex-1 h-px bg-gray-100 dark:bg-gray-800"></div>
+</div>
+
+{# ─── Source Performance Table ────────────────────────────────────── #}
+{% if source_performance %}
+<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5 mb-4">
+  <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Source Performance</h3>
+  <p class="text-xs text-gray-400 dark:text-gray-500 mb-4">Which channels are actually generating callbacks.</p>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-gray-100 dark:border-gray-700 text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide">
+          <th class="text-left pb-2 pr-4">Source</th>
+          <th class="text-right pb-2 pr-4">Applied</th>
+          <th class="text-right pb-2 pr-4">Callbacks</th>
+          <th class="text-right pb-2">Callback Rate</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
+        {% for row in source_performance %}
+        <tr>
+          <td class="py-2 pr-4">
+            <span class="inline-flex items-center gap-1.5 text-xs text-gray-700 dark:text-gray-300 font-medium">
+              <span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: {{ row.color }}"></span>
+              {{ row.source }}
+            </span>
+          </td>
+          <td class="py-2 pr-4 text-right text-xs text-gray-500 dark:text-gray-400">{{ row.applied }}</td>
+          <td class="py-2 pr-4 text-right text-xs text-gray-500 dark:text-gray-400">{{ row.responded }}</td>
+          <td class="py-2 text-right text-xs font-semibold
+            {% if row.callback_rate >= 30 %}text-green-600 dark:text-green-400
+            {% elif row.callback_rate >= 15 %}text-yellow-600 dark:text-yellow-400
+            {% else %}text-gray-400 dark:text-gray-500{% endif %}">
+            {{ row.callback_rate }}%
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{# ─── Row: Status Doughnut + Applications Over Time ───────────────── #}
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
 
-  {# Status Breakdown #}
   <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
-    <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Status Breakdown</h2>
+    <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Status Breakdown</h3>
     <div class="relative h-52">
       <canvas id="statusChart"></canvas>
     </div>
   </div>
 
-  {# Applications Over Time #}
   <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5 lg:col-span-2">
-    <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Applications Over Time <span class="text-xs font-normal text-gray-400 dark:text-gray-500">(by week)</span></h2>
+    <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
+      Applications Over Time
+      <span class="text-xs font-normal text-gray-400 dark:text-gray-500">(by week)</span>
+    </h3>
     <div class="relative h-52">
       <canvas id="timelineChart"></canvas>
     </div>
@@ -65,38 +136,39 @@
 
 </div>
 
-{# ─── Row 3: Company Size + Source Breakdown ─────────────────────────── #}
+{# ─── Row: Company Size + Stage Funnel ────────────────────────────── #}
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
 
   <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
-    <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">By Company Size</h2>
+    <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">By Company Size</h3>
     <div class="relative h-44">
       <canvas id="sizeChart"></canvas>
     </div>
   </div>
 
   <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
-    <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">By Source Channel</h2>
+    <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Stage Funnel</h3>
+    <p class="text-xs text-gray-400 dark:text-gray-500 mb-4">Conversion % shown above each bar.</p>
     <div class="relative h-44">
-      <canvas id="sourceChart"></canvas>
+      <canvas id="funnelChart"></canvas>
     </div>
   </div>
 
 </div>
 
-{# ─── Row 4: Stage Funnel ────────────────────────────────────────────── #}
-<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5 mb-4">
-  <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Stage Funnel</h2>
-  <p class="text-xs text-gray-400 dark:text-gray-500 mb-4">How many applications reached each stage of the pipeline.</p>
-  <div class="relative h-40">
-    <canvas id="funnelChart"></canvas>
-  </div>
+{# ═══════════════════════════════════════════════════════════════════ #}
+{# ACT 3 — WHAT NEEDS ATTENTION?                                      #}
+{# ═══════════════════════════════════════════════════════════════════ #}
+
+<div class="flex items-center gap-3 mb-4 mt-6">
+  <h2 class="text-base font-semibold text-gray-800 dark:text-gray-100 whitespace-nowrap">What Needs Attention</h2>
+  <div class="flex-1 h-px bg-gray-100 dark:bg-gray-800"></div>
 </div>
 
-{# ─── Row 5: Salary Ranges ───────────────────────────────────────────── #}
+{# ─── Salary Ranges ───────────────────────────────────────────────── #}
 {% if salary_rows %}
 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5 mb-4">
-  <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Salary Ranges</h2>
+  <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Salary Ranges</h3>
   <div class="overflow-x-auto">
     <table class="w-full text-sm">
       <thead>
@@ -127,10 +199,10 @@
 </div>
 {% endif %}
 
-{# ─── Row 6: Active Pipeline Staleness ───────────────────────────────── #}
+{# ─── Active Pipeline Staleness ───────────────────────────────────── #}
 {% if pipeline_apps %}
 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5 mb-4">
-  <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Active Pipeline — Days Waiting</h2>
+  <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Active Pipeline — Days Waiting</h3>
   <p class="text-xs text-gray-400 dark:text-gray-500 mb-4">How long each active application has been sitting.</p>
   <div class="space-y-3">
     {% set max_days = pipeline_apps | map(attribute='days') | max %}
@@ -148,27 +220,46 @@
       </div>
     </div>
     {% endfor %}
-    <p class="text-xs text-gray-300 dark:text-gray-600 pt-1">
-      Green &lt;7d &nbsp;·&nbsp; Yellow 7–14d &nbsp;·&nbsp; Orange 14–21d &nbsp;·&nbsp; Red &gt;21d
+    <p class="text-xs text-gray-400 dark:text-gray-500 pt-1">
+      <span class="text-green-600 dark:text-green-400 font-medium">Green</span> &lt;7d
+      &nbsp;·&nbsp;
+      <span class="text-yellow-600 dark:text-yellow-400 font-medium">Yellow</span> 7–14d
+      &nbsp;·&nbsp;
+      <span class="text-orange-500 dark:text-orange-400 font-medium">Orange</span> 14–21d
+      &nbsp;·&nbsp;
+      <span class="text-red-500 dark:text-red-400 font-medium">Red</span> &gt;21d
     </p>
   </div>
 </div>
 {% endif %}
 
+{# ═══════════════════════════════════════════════════════════════════ #}
+{# ACT 4 — WHAT DOES THE DATA SAY?                                    #}
+{# ═══════════════════════════════════════════════════════════════════ #}
+
+<div class="flex items-center gap-3 mb-4 mt-6">
+  <h2 class="text-base font-semibold text-gray-800 dark:text-gray-100 whitespace-nowrap">What Does the Data Say?</h2>
+  <div class="flex-1 h-px bg-gray-100 dark:bg-gray-800"></div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+  {% include "analytics/_strategy_panel.html" %}
+  {% include "analytics/_jd_analyzer.html" %}
+</div>
+
 {# ─── Chart.js Scripts ───────────────────────────────────────────────── #}
 <script>
   var isDark = document.documentElement.classList.contains('dark');
-  var gridColor  = isDark ? '#374151' : '#f3f4f6';  // gray-700 / gray-100
-  var tickColor  = isDark ? '#9ca3af' : '#6b7280';  // gray-400 / gray-500
-  var legendColor = isDark ? '#d1d5db' : '#374151'; // gray-300 / gray-700
+  var gridColor   = isDark ? '#374151' : '#f3f4f6';
+  var tickColor   = isDark ? '#9ca3af' : '#6b7280';
+  var legendColor = isDark ? '#d1d5db' : '#374151';
+  var borderColor = isDark ? '#111827' : '#fff';
 
   Chart.defaults.font.family = "system-ui, sans-serif";
   Chart.defaults.font.size = 12;
   Chart.defaults.color = tickColor;
   Chart.defaults.plugins.legend.labels.boxWidth = 12;
   Chart.defaults.plugins.legend.labels.color = legendColor;
-
-  var borderColor = isDark ? '#111827' : '#fff'; // gray-900 / white
 
   // Status doughnut
   new Chart(document.getElementById("statusChart"), {
@@ -191,7 +282,7 @@
     }
   });
 
-  // Applications over time bar
+  // Applications over time
   new Chart(document.getElementById("timelineChart"), {
     type: "bar",
     data: {
@@ -216,7 +307,7 @@
     }
   });
 
-  // Company size bar
+  // Company size
   new Chart(document.getElementById("sizeChart"), {
     type: "bar",
     data: {
@@ -241,56 +332,56 @@
     }
   });
 
-  // Source horizontal bar
-  new Chart(document.getElementById("sourceChart"), {
-    type: "bar",
-    data: {
-      labels: {{ source_labels | safe }},
-      datasets: [{
-        label: "Applications",
-        data: {{ source_data | safe }},
-        backgroundColor: {{ source_colors | safe }}.map(c => c + "cc"),
-        borderColor: {{ source_colors | safe }},
-        borderWidth: 1,
-        borderRadius: 4,
-      }]
-    },
-    options: {
-      indexAxis: "y",
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        x: { beginAtZero: true, ticks: { stepSize: 1, color: tickColor }, grid: { color: gridColor } },
-        y: { ticks: { color: tickColor }, grid: { display: false } }
-      },
-      plugins: { legend: { display: false } }
-    }
-  });
+  // Stage funnel with conversion % labels between bars
+  (function () {
+    var funnelData   = {{ funnel_data | safe }};
+    var funnelColors = {{ funnel_colors | safe }};
 
-  // Stage funnel bar
-  new Chart(document.getElementById("funnelChart"), {
-    type: "bar",
-    data: {
-      labels: {{ funnel_labels | safe }},
-      datasets: [{
-        label: "Applications reached",
-        data: {{ funnel_data | safe }},
-        backgroundColor: {{ funnel_colors | safe }}.map(c => c + "99"),
-        borderColor: {{ funnel_colors | safe }},
-        borderWidth: 1,
-        borderRadius: 4,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        y: { beginAtZero: true, ticks: { stepSize: 1, color: tickColor }, grid: { color: gridColor } },
-        x: { ticks: { color: tickColor }, grid: { display: false } }
+    var conversionPlugin = {
+      id: 'conversionLabels',
+      afterDatasetsDraw: function (chart) {
+        var ctx  = chart.ctx;
+        var meta = chart.getDatasetMeta(0);
+        ctx.save();
+        ctx.font = 'bold 10px system-ui, sans-serif';
+        ctx.fillStyle = tickColor;
+        ctx.textAlign = 'center';
+        meta.data.forEach(function (bar, i) {
+          if (i > 0 && funnelData[i - 1] > 0) {
+            var pct = Math.round(funnelData[i] / funnelData[i - 1] * 100);
+            ctx.fillText(pct + '%', bar.x, bar.y - 6);
+          }
+        });
+        ctx.restore();
+      }
+    };
+
+    new Chart(document.getElementById("funnelChart"), {
+      type: "bar",
+      data: {
+        labels: {{ funnel_labels | safe }},
+        datasets: [{
+          label: "Applications reached",
+          data: funnelData,
+          backgroundColor: funnelColors.map(c => c + "99"),
+          borderColor: funnelColors,
+          borderWidth: 1,
+          borderRadius: 4,
+        }]
       },
-      plugins: { legend: { display: false } }
-    }
-  });
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { top: 18 } },
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 1, color: tickColor }, grid: { color: gridColor } },
+          x: { ticks: { color: tickColor }, grid: { display: false } }
+        },
+        plugins: { legend: { display: false } }
+      },
+      plugins: [conversionPlugin]
+    });
+  }());
 </script>
 
 {% endif %} {# end no_data #}

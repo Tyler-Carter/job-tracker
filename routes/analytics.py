@@ -1,11 +1,16 @@
 import json
+import os
 from collections import defaultdict
 from datetime import date, timedelta
 
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request, Response, stream_with_context
+from groq import Groq
 
-from app import db
-from models import Application, ApplicationSource, ApplicationStatus, CompanySize, StageEvent
+from app import db, require_admin
+from models import (
+    Application, ApplicationSource, ApplicationStatus, CompanySize, StageEvent,
+)
+from prompts import PROMPTS, CURRENT_VERSION, SYSTEM_PROMPT
 
 bp = Blueprint("analytics", __name__, url_prefix="/analytics")
 
@@ -34,6 +39,44 @@ SOURCE_COLORS = {
     ApplicationSource.JOB_BOARD:       "#3b82f6",
     ApplicationSource.OTHER:           "#6b7280",
 }
+
+
+def _generate_snapshot(total, response_rate, offers, active, source_performance):
+    """Return a 1-2 sentence plain-text insight string. No AI — deterministic Python."""
+    if total < 5:
+        return (
+            f"You have {total} application{'s' if total != 1 else ''} logged so far"
+            " — keep building the pipeline."
+        )
+
+    best = source_performance[0] if source_performance else None
+
+    if response_rate >= 30:
+        rate_msg = f"a strong {response_rate}% response rate"
+    elif response_rate >= 15:
+        rate_msg = f"a {response_rate}% response rate (near the ~15% industry average)"
+    else:
+        rate_msg = (
+            f"a below-average {response_rate}% response rate"
+            " — volume or targeting may need attention"
+        )
+
+    parts = [f"Across {total} applications you're seeing {rate_msg}."]
+
+    if offers:
+        parts.append(f"You have {offers} offer{'s' if offers != 1 else ''} — excellent work.")
+    elif best and best["callback_rate"] > 0:
+        parts.append(
+            f"{best['source']} is your top channel"
+            f" at {best['callback_rate']}% callback rate."
+        )
+    elif active:
+        parts.append(
+            f"{active} application{'s are' if active != 1 else ' is'}"
+            " still active in the pipeline."
+        )
+
+    return " ".join(parts)
 
 
 @bp.route("/")
@@ -86,7 +129,37 @@ def index():
         if count:
             source_labels.append(source.value)
             source_data.append(count)
-            source_colors.append(SOURCE_COLORS[source])
+            source_colors.append(SOURCE_COLORS.get(source, "#6b7280"))
+
+    # ------------------------------------------------------------------ #
+    # Source performance table (callback rates)                           #
+    # Uses StageEvent to catch apps that progressed then were rejected.   #
+    # ------------------------------------------------------------------ #
+    source_performance = []
+    for source in ApplicationSource:
+        applied_count = Application.query.filter_by(source=source).count()
+        if not applied_count:
+            continue
+        # Count unique applications from this source that ever reached Phone Screen
+        progressed_count = (
+            db.session.query(StageEvent.application_id)
+            .join(Application, Application.id == StageEvent.application_id)
+            .filter(
+                Application.source == source,
+                StageEvent.stage == ApplicationStatus.PHONE_SCREEN,
+            )
+            .distinct()
+            .count()
+        )
+        callback_rate = round(progressed_count / applied_count * 100)
+        source_performance.append({
+            "source": source.value,
+            "applied": applied_count,
+            "responded": progressed_count,
+            "callback_rate": callback_rate,
+            "color": SOURCE_COLORS.get(source, "#6b7280"),
+        })
+    source_performance.sort(key=lambda r: r["callback_rate"], reverse=True)
 
     # ------------------------------------------------------------------ #
     # Company size breakdown (bar)                                        #
@@ -128,7 +201,6 @@ def index():
     ]
     funnel_labels, funnel_data, funnel_colors = [], [], []
     for stage in funnel_stages:
-        # Count unique applications that have a StageEvent at this stage
         count = (
             db.session.query(StageEvent.application_id)
             .filter(StageEvent.stage == stage)
@@ -180,6 +252,11 @@ def index():
             }
         )
 
+    # ------------------------------------------------------------------ #
+    # Narrative snapshot (deterministic Python — no AI cost)              #
+    # ------------------------------------------------------------------ #
+    snapshot = _generate_snapshot(total, response_rate, offers, active, source_performance)
+
     return render_template(
         "analytics/index.html",
         no_data=False,
@@ -189,6 +266,7 @@ def index():
         offers=offers,
         responded=responded,
         response_rate=response_rate,
+        snapshot=snapshot,
         # status doughnut
         status_labels=json.dumps(status_labels),
         status_data=json.dumps(status_data),
@@ -197,6 +275,8 @@ def index():
         source_labels=json.dumps(source_labels),
         source_data=json.dumps(source_data),
         source_colors=json.dumps(source_colors),
+        # source performance table
+        source_performance=source_performance,
         # size bar
         size_labels=json.dumps(size_labels),
         size_data=json.dumps(size_data),
@@ -212,4 +292,149 @@ def index():
         salary_rows=salary_rows,
         # pipeline staleness
         pipeline_apps=pipeline_apps,
+    )
+
+
+# ------------------------------------------------------------------ #
+# JD Analyzer — paste any job description, get structured extraction  #
+# ------------------------------------------------------------------ #
+@bp.route("/jd-analyze", methods=["POST"])
+@require_admin
+def jd_analyze():
+    jd_text = request.form.get("jd_text", "").strip()
+    if not jd_text or len(jd_text) < 50:
+        return render_template(
+            "analytics/_jd_result.html",
+            result=None,
+            error="Please paste a job description (at least 50 characters).",
+        )
+
+    api_key = os.environ.get("GROQ_API_KEY")
+    if not api_key:
+        return render_template(
+            "analytics/_jd_result.html",
+            result=None,
+            error="GROQ_API_KEY is not configured.",
+        )
+
+    prompt = PROMPTS[CURRENT_VERSION]["JD_ANALYZER"].format(jd=jd_text)
+
+    try:
+        client = Groq(api_key=api_key)
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=1024,
+            response_format={"type": "json_object"},
+        )
+        raw = response.choices[0].message.content
+        result = json.loads(raw)
+    except json.JSONDecodeError:
+        return render_template(
+            "analytics/_jd_result.html",
+            result=None,
+            error="Model returned invalid JSON. Try again.",
+        )
+    except Exception as e:
+        return render_template(
+            "analytics/_jd_result.html",
+            result=None,
+            error=f"API error: {str(e)}",
+        )
+
+    return render_template("analytics/_jd_result.html", result=result, error=None)
+
+
+# ------------------------------------------------------------------ #
+# Strategy Advisor — SSE streaming analysis of full application       #
+# history. Uses Groq stream=True; response_format is incompatible     #
+# with streaming so the prompt requests JSON in natural language.     #
+# X-Accel-Buffering: no disables Railway nginx buffering for SSE.     #
+# ------------------------------------------------------------------ #
+@bp.route("/strategy/stream")
+@require_admin
+def strategy_stream():
+    api_key = os.environ.get("GROQ_API_KEY")
+
+    if not api_key:
+        def _error_gen():
+            yield "data: API key not configured.\n\n"
+            yield "event: done\ndata: \n\n"
+        return Response(
+            stream_with_context(_error_gen()),
+            mimetype="text/event-stream",
+            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        )
+
+    all_apps = Application.query.order_by(Application.date_applied).all()
+
+    if not all_apps:
+        def _no_data_gen():
+            yield "data: No application data available yet.\n\n"
+            yield "event: done\ndata: \n\n"
+        return Response(
+            stream_with_context(_no_data_gen()),
+            mimetype="text/event-stream",
+            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        )
+
+    # Serialize applications compactly for prompt efficiency
+    apps_data = []
+    for app in all_apps:
+        days_to_respond = None
+        non_applied = [
+            e for e in app.stage_events
+            if e.stage != ApplicationStatus.APPLIED
+        ]
+        if non_applied:
+            first = min(non_applied, key=lambda e: e.occurred_on)
+            days_to_respond = (first.occurred_on - app.date_applied).days
+
+        apps_data.append({
+            "source": app.source.value,
+            "status": app.current_status.value,
+            "company_size": app.company_size.value,
+            "date_applied": app.date_applied.isoformat(),
+            "days_to_respond": days_to_respond,
+        })
+
+    prompt = PROMPTS[CURRENT_VERSION]["STRATEGY_ADVISOR"].format(
+        applications_json=json.dumps(apps_data)
+    )
+
+    def generate():
+        try:
+            client = Groq(api_key=api_key)
+            stream = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": prompt},
+                ],
+                max_tokens=1500,
+                stream=True,
+                # Note: response_format is not compatible with stream=True in the Groq API.
+                # The prompt instructs the model to return JSON; we parse it client-side
+                # after the stream completes.
+            )
+            for chunk in stream:
+                delta = chunk.choices[0].delta.content or ""
+                if delta:
+                    # Each SSE data line must be a single line; escape newlines in content
+                    for line in delta.splitlines(keepends=True):
+                        safe = line.rstrip("\n\r")
+                        if safe:
+                            yield f"data: {safe}\n\n"
+        except Exception as e:
+            yield f"data: Error: {str(e)}\n\n"
+
+        yield "event: done\ndata: \n\n"
+
+    return Response(
+        stream_with_context(generate()),
+        mimetype="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )

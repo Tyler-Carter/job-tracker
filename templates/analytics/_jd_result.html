@@ -1,0 +1,107 @@
+{% if error %}
+  <p class="text-xs text-red-500 dark:text-red-400">{{ error }}</p>
+
+{% elif result %}
+  <div class="space-y-4 border-t border-gray-100 dark:border-gray-700 pt-4">
+
+    {# ── Badges: seniority + role type ── #}
+    <div class="flex items-center gap-2 flex-wrap">
+      {% if result.seniority_level and result.seniority_level != 'not specified' %}
+        <span class="px-2 py-0.5 rounded-full text-xs font-semibold
+                     bg-violet-100 dark:bg-violet-900 text-violet-800 dark:text-violet-200">
+          {{ result.seniority_level | capitalize }}
+        </span>
+      {% endif %}
+      {% if result.role_type %}
+        <span class="px-2 py-0.5 rounded-full text-xs font-semibold
+                     bg-teal-100 dark:bg-teal-900 text-teal-800 dark:text-teal-200">
+          {{ result.role_type }}
+        </span>
+      {% endif %}
+    </div>
+
+    {# ── Required skills — blue pills ── #}
+    {% if result.required_skills %}
+      <div>
+        <p class="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1.5">
+          Required Skills
+        </p>
+        <div class="flex flex-wrap gap-1.5">
+          {% for skill in result.required_skills %}
+            <span class="px-2 py-0.5 rounded text-xs
+                         bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+              {{ skill }}
+            </span>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    {# ── Nice to haves — gray outline pills ── #}
+    {% if result.nice_to_haves %}
+      <div>
+        <p class="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1.5">
+          Nice to Have
+        </p>
+        <div class="flex flex-wrap gap-1.5">
+          {% for skill in result.nice_to_haves %}
+            <span class="px-2 py-0.5 rounded text-xs border border-gray-200 dark:border-gray-700
+                         text-gray-500 dark:text-gray-400">
+              {{ skill }}
+            </span>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    {# ── Red flags ── #}
+    {% if result.red_flags %}
+      <div>
+        <p class="text-xs font-medium text-red-500 dark:text-red-400 uppercase tracking-wide mb-1.5">
+          Red Flags
+        </p>
+        <ul class="space-y-1">
+          {% for flag in result.red_flags %}
+            <li class="flex gap-1.5 text-xs text-red-600 dark:text-red-400">
+              <span class="flex-shrink-0 font-bold">!</span>{{ flag }}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    {# ── Green flags ── #}
+    {% if result.green_flags %}
+      <div>
+        <p class="text-xs font-medium text-green-600 dark:text-green-400 uppercase tracking-wide mb-1.5">
+          Green Flags
+        </p>
+        <ul class="space-y-1">
+          {% for flag in result.green_flags %}
+            <li class="flex gap-1.5 text-xs text-green-700 dark:text-green-400">
+              <span class="flex-shrink-0 font-bold">+</span>{{ flag }}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    {# ── Culture cues — gray filled pills ── #}
+    {% if result.company_culture_cues %}
+      <div>
+        <p class="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1.5">
+          Culture Signals
+        </p>
+        <div class="flex flex-wrap gap-1.5">
+          {% for cue in result.company_culture_cues %}
+            <span class="px-2 py-0.5 rounded text-xs
+                         bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+              {{ cue }}
+            </span>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+  </div>
+{% endif %}

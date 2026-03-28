@@ -1,0 +1,144 @@
+<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5 flex flex-col">
+  <div class="flex items-start justify-between gap-3 mb-3">
+    <div>
+      <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Strategy Advisor</h3>
+      <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+        AI analysis of your full application history — patterns, bottlenecks, and recommendations.
+      </p>
+    </div>
+    {% if session.get('is_admin') %}
+      <button
+        id="strategy-btn"
+        onclick="startStrategyStream()"
+        class="flex-shrink-0 inline-flex items-center gap-2 px-3 py-1.5
+               bg-violet-600 hover:bg-violet-700 text-white text-xs font-medium
+               rounded-lg transition-colors">
+        <svg id="strategy-spinner"
+          class="hidden animate-spin w-3.5 h-3.5 text-white"
+          xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+        Analyze My Strategy
+      </button>
+    {% endif %}
+  </div>
+
+  {# Output container — text streams in as SSE chunks arrive, then reformats to HTML #}
+  <div
+    id="strategy-output"
+    class="text-xs text-gray-500 dark:text-gray-400 font-mono leading-relaxed whitespace-pre-wrap min-h-[4rem]">
+    <p class="text-gray-300 dark:text-gray-600 text-center py-6 not-prose font-sans text-sm">
+      Click "Analyze My Strategy" to generate an AI-powered analysis of your application patterns.
+    </p>
+  </div>
+</div>
+
+<script>
+(function () {
+  var _activeSource = null;
+
+  window.startStrategyStream = function () {
+    var output = document.getElementById('strategy-output');
+    var btn    = document.getElementById('strategy-btn');
+    var spin   = document.getElementById('strategy-spinner');
+
+    // Close any in-flight stream
+    if (_activeSource) { _activeSource.close(); _activeSource = null; }
+
+    // Reset UI
+    output.className = 'text-xs text-gray-500 dark:text-gray-400 font-mono leading-relaxed whitespace-pre-wrap min-h-[4rem]';
+    output.textContent = '';
+    btn.disabled = true;
+    spin.classList.remove('hidden');
+
+    var source = new EventSource("{{ url_for('analytics.strategy_stream') }}");
+    _activeSource = source;
+
+    source.onmessage = function (e) {
+      output.textContent += e.data;
+    };
+
+    source.addEventListener('done', function () {
+      source.close();
+      _activeSource = null;
+      btn.disabled = false;
+      spin.classList.add('hidden');
+
+      // Attempt to parse accumulated JSON and reformat as structured HTML
+      var raw = output.textContent.trim();
+      try {
+        var data = JSON.parse(raw);
+        output.className = 'min-h-[4rem]'; // remove mono/pre-wrap for formatted output
+        output.innerHTML = _formatResult(data);
+      } catch (_) {
+        // Leave as raw text if JSON parse fails (partial stream / non-JSON model output)
+      }
+    });
+
+    source.onerror = function () {
+      source.close();
+      _activeSource = null;
+      btn.disabled = false;
+      spin.classList.add('hidden');
+      if (!output.textContent.trim()) {
+        output.className = 'min-h-[4rem]';
+        output.innerHTML = '<p class="text-xs text-red-500 dark:text-red-400">Stream error — please try again.</p>';
+      }
+    };
+  };
+
+  function _esc(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  function _formatResult(d) {
+    var html = '';
+
+    if (d.headline) {
+      html += '<p class="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3">'
+            + _esc(d.headline) + '</p>';
+    }
+
+    var narratives = [
+      { key: 'source_analysis',  label: 'Source Performance' },
+      { key: 'funnel_analysis',  label: 'Funnel Analysis' },
+      { key: 'pacing_analysis',  label: 'Pacing' },
+    ];
+    narratives.forEach(function (n) {
+      if (d[n.key]) {
+        html += '<div class="mb-3">'
+              + '<p class="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1">'
+              + _esc(n.label) + '</p>'
+              + '<p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">'
+              + _esc(d[n.key]) + '</p>'
+              + '</div>';
+      }
+    });
+
+    if (d.top_recommendations && d.top_recommendations.length) {
+      html += '<div class="mb-3">'
+            + '<p class="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1.5">'
+            + 'Recommendations</p>'
+            + '<ul class="space-y-1.5">';
+      d.top_recommendations.forEach(function (rec) {
+        html += '<li class="flex gap-2 text-xs text-gray-600 dark:text-gray-400">'
+              + '<span class="text-violet-500 dark:text-violet-400 flex-shrink-0 font-bold">&rarr;</span>'
+              + _esc(rec) + '</li>';
+      });
+      html += '</ul></div>';
+    }
+
+    if (d.encouragement) {
+      html += '<p class="text-xs text-green-600 dark:text-green-400 italic mt-2">'
+            + _esc(d.encouragement) + '</p>';
+    }
+
+    return html || '<p class="text-xs text-gray-400">No analysis generated.</p>';
+  }
+}());
+</script>

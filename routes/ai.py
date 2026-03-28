@@ -1,78 +1,43 @@
 import json
 import os
+import time
 
 from flask import Blueprint, render_template, request, abort
 from groq import Groq
 from app import db, require_admin
 from models import Application, AIAnalysis, AnalysisType
+from prompts import SYSTEM_PROMPT as _SYSTEM_PROMPT, PROMPTS, CURRENT_VERSION
 
 bp = Blueprint("ai", __name__, url_prefix="/applications")
 
-_SYSTEM_PROMPT = (
-    "You are an expert job application analyst. Be concise and practical. "
-    "Always respond with ONLY valid JSON matching the schema specified in each request. "
-    "Do not include any text outside the JSON object."
-)
+# Active prompt set for this version
+_PROMPTS = PROMPTS[CURRENT_VERSION]
 
-_PROMPTS = {
-    AnalysisType.SKILLS: """\
-Analyze this job description for the role of "{role}" at "{company}".
-
-Job Description:
----
-{jd}
----
-
-Extract the key skills and requirements. Respond with ONLY valid JSON matching this exact schema:
-{{
-  "required_skills": ["skill1", "skill2"],
-  "nice_to_have_skills": ["skill1", "skill2"],
-  "technologies": ["tech1", "tech2"],
-  "experience_level": "junior|mid|senior|staff",
-  "key_responsibilities": ["responsibility1", "responsibility2"]
-}}""",
-
-    AnalysisType.FIT_SUMMARY: """\
-Analyze this job description for the role of "{role}" at "{company}" (a {size} {type} company).
-
-Job Description:
----
-{jd}
----
-
-Write a practical summary of what this role involves and what the company is looking for.
-Respond with ONLY valid JSON matching this exact schema:
-{{
-  "summary": "3-5 sentence plain text narrative",
-  "role_type": "IC|manager|hybrid",
-  "seniority_signal": "brief note on seniority signals in the JD",
-  "red_flags": ["optional red flag if any"],
-  "green_flags": ["positive signal"]
-}}""",
-
-    AnalysisType.INTERVIEW: """\
-Prepare interview questions for a candidate applying for "{role}" at "{company}".
-
-Job Description:
----
-{jd}
----
-
-Generate targeted questions the candidate is likely to be asked, based specifically on this job description.
-Respond with ONLY valid JSON matching this exact schema:
-{{
-  "behavioral": ["question1", "question2", "question3"],
-  "technical": ["question1", "question2", "question3"],
-  "role_specific": ["question1", "question2"],
-  "questions_to_ask_them": ["question1", "question2"]
-}}""",
-}
+# ------------------------------------------------------------------ #
+# Rate limiter                                                         #
+# In-process dict keyed by (app_id, analysis_type_value) → timestamp  #
+# Resets on server restart — acceptable for a single-admin personal    #
+# app running on one Railway dyno.                                     #
+# ------------------------------------------------------------------ #
+_rate_limit_store: dict[tuple, float] = {}
+_RATE_LIMIT_SECONDS = 30
 
 
 def _run_analysis(app_obj, analysis_type):
     """Call Groq API and upsert the result into AIAnalysis. Returns (result_dict, error_str)."""
     if not app_obj.job_description:
         return None, "No job description saved for this application."
+
+    # Rate limiting: serve stale cache if available, else block with wait message
+    rate_key = (app_obj.id, analysis_type.value)
+    last_run = _rate_limit_store.get(rate_key)
+    now = time.time()
+    if last_run and (now - last_run) < _RATE_LIMIT_SECONDS:
+        cached, _ = _get_cached(app_obj.id, analysis_type)
+        if cached:
+            return cached, None  # graceful degradation — serve stale cache silently
+        wait = int(_RATE_LIMIT_SECONDS - (now - last_run))
+        return None, f"Rate limited. Please wait {wait}s before re-running."
 
     prompt = _PROMPTS[analysis_type].format(
         role=app_obj.role_title,
@@ -122,6 +87,7 @@ def _run_analysis(app_obj, analysis_type):
         ))
     db.session.commit()
 
+    _rate_limit_store[rate_key] = time.time()
     return result, None
 
 

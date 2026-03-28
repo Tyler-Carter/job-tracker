@@ -1,5 +1,4 @@
-{% set analyses = {a.analysis_type: a for a in app.ai_analyses} %}
-
+{# analyses dict is pre-built in Python and passed via template context #}
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
   {# ── Skills Card ── #}

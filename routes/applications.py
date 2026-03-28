@@ -221,6 +221,8 @@ def create_application():
 @bp.route("/<int:app_id>")
 def get_application(app_id):
     app_obj = Application.query.get_or_404(app_id)
+    # Build analyses lookup in Python — Jinja2 does not support dict comprehensions
+    analyses = {a.analysis_type: a for a in app_obj.ai_analyses}
     return render_template(
         "applications/detail.html",
         app=app_obj,
@@ -228,6 +230,7 @@ def get_application(app_id):
         statuses=ApplicationStatus,
         outcomes=StageOutcome,
         analysis_types=AnalysisType,
+        analyses=analyses,
         today=date.today().isoformat(),
         event_errors={},
     )
@@ -306,12 +309,15 @@ def add_stage_event(app_id):
     data, errors = _parse_event_form(request.form)
 
     if errors:
+        analyses = {a.analysis_type: a for a in app_obj.ai_analyses}
         return render_template(
             "applications/detail.html",
             app=app_obj,
             status_badge=STATUS_BADGE,
             statuses=ApplicationStatus,
             outcomes=StageOutcome,
+            analysis_types=AnalysisType,
+            analyses=analyses,
             today=date.today().isoformat(),
             event_errors=errors,
         ), 422
